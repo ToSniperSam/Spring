@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CSV 文件上传与排序</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .pagination {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .pagination a {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            text-decoration: none;
+            color: #333;
+        }
+        .pagination a.active {
+            font-weight: bold;
+            background-color: #f2f2f2;
+        }
+        .pagination a:hover {
+            background-color: #ddd;
+        }
+    </style>
+    <script>
+        function sortData() {
+            const column = document.getElementById("sortColumn").value;
+            if (column) {
+                const form = document.createElement("form");
+                form.method = "post";
+                form.action = "/sort";
+
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "column";
+                input.value = column;
+
+                const pageInput = document.createElement("input");
+                pageInput.type = "hidden";
+                pageInput.name = "page";
+                pageInput.value = 1; // 排序后回到第一页
+
+                form.appendChild(input);
+                form.appendChild(pageInput);
+                document.body.appendChild(form);
+                form.submit();
+            } else {
+                alert("请选择排序列！");
+            }
+        }
+    </script>
+</head>
+<body>
+<h1>CSV 文件上传与排序</h1>
+
+<!-- 文件上传表单 -->
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".csv" required />
+    <button type="submit">上传文件</button>
+</form>
+
+<hr/>
+
+<!-- 排序表单 -->
+<form method="post" onsubmit="sortData(); return false;">
+    <label for="sortColumn">选择排序列:</label>
+    <select id="sortColumn" name="column">
+        <option value="VehicleType">VehicleType</option>
+        <option value="DirectionTime_O">DirectionTime_O</option>
+        <option value="GantryID_O">GantryID_O</option>
+        <option value="TripLength">TripLength</option>
+    </select>
+    <button type="submit">排序</button>
+</form>
+
+<hr/>
+
+<!-- 排序时间显示 -->
+<div th:if="${sortTime}">
+    <p th:text="'排序耗时: ' + ${sortTime} + ' 毫秒'"></p>
+</div>
+
+<!-- 错误信息显示 -->
+<div th:if="${error}" style="color: red;">
+    <p th:text="${error}"></p>
+</div>
+
+<!-- 提示信息 -->
+<div th:if="${warning}" style="color: orange;">
+    <p th:text="${warning}"></p>
+</div>
+
+<!-- 数据表格显示 -->
+<table th:if="${data}" th:unless="${#lists.isEmpty(data)}">
+    <thead>
+    <tr>
+        <th th:each="header : ${data[0].keySet()}" th:text="${header}"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="row : ${data}">
+        <td th:each="entry : ${row.entrySet()}"
+            th:text="${entry.value}"
+            th:classappend="${entry.key == '序号' ? 'bold' : ''}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<!-- 分页导航 -->
+<div class="pagination" th:if="${totalPages > 1}">
+    <a th:each="i : ${#numbers.sequence(1, totalPages)}"
+       th:href="@{'/file?page=' + i}"
+       th:classappend="${i == currentPage ? 'active' : ''}"
+       th:text="'第 ' + i + ' 页'"></a>
+</div>
+
+<!-- 没有数据时显示 -->
+<p th:if="${#lists.isEmpty(data)}">暂无数据，请上传文件。</p>
+</body>
+</html>
