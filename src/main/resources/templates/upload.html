@@ -20,45 +20,41 @@
         .bold {
             font-weight: bold;
         }
-        .pagination {
-            margin: 20px 0;
-            text-align: center;
-        }
-        .pagination a {
-            margin: 0 5px;
-            padding: 5px 10px;
+        .info {
+            margin: 10px 0;
+            padding: 10px;
             border: 1px solid #ccc;
-            text-decoration: none;
-            color: #333;
+            background-color: #f9f9f9;
         }
-        .pagination a.active {
-            font-weight: bold;
-            background-color: #f2f2f2;
+        .error {
+            color: red;
         }
-        .pagination a:hover {
-            background-color: #ddd;
+        .warning {
+            color: orange;
         }
     </style>
     <script>
         function sortData() {
             const column = document.getElementById("sortColumn").value;
+            const order = document.querySelector('input[name="order"]:checked').value;
+
             if (column) {
                 const form = document.createElement("form");
                 form.method = "post";
                 form.action = "/sort";
 
-                const input = document.createElement("input");
-                input.type = "hidden";
-                input.name = "column";
-                input.value = column;
+                const columnInput = document.createElement("input");
+                columnInput.type = "hidden";
+                columnInput.name = "column";
+                columnInput.value = column;
 
-                const pageInput = document.createElement("input");
-                pageInput.type = "hidden";
-                pageInput.name = "page";
-                pageInput.value = 1; // 排序后回到第一页
+                const orderInput = document.createElement("input");
+                orderInput.type = "hidden";
+                orderInput.name = "order";
+                orderInput.value = order;
 
-                form.appendChild(input);
-                form.appendChild(pageInput);
+                form.appendChild(columnInput);
+                form.appendChild(orderInput);
                 document.body.appendChild(form);
                 form.submit();
             } else {
@@ -76,9 +72,15 @@
     <button type="submit">上传文件</button>
 </form>
 
+<!-- 显示警告、错误、信息 -->
+<div class="info" th:if="${message}" th:text="${message}"></div>
+<div class="error" th:if="${error}" th:text="${error}"></div>
+<div class="warning" th:if="${warning}" th:text="${warning}"></div>
+
 <hr/>
 
 <!-- 排序表单 -->
+<h2>排序设置</h2>
 <form method="post" onsubmit="sortData(); return false;">
     <label for="sortColumn">选择排序列:</label>
     <select id="sortColumn" name="column">
@@ -87,24 +89,22 @@
         <option value="GantryID_O">GantryID_O</option>
         <option value="TripLength">TripLength</option>
     </select>
+
+    <label>
+        <input type="radio" name="order" value="asc" checked /> 升序
+    </label>
+    <label>
+        <input type="radio" name="order" value="desc" /> 降序
+    </label>
+
     <button type="submit">排序</button>
 </form>
 
 <hr/>
 
-<!-- 排序时间显示 -->
+<!-- 显示排序时间 -->
 <div th:if="${sortTime}">
     <p th:text="'排序耗时: ' + ${sortTime} + ' 毫秒'"></p>
-</div>
-
-<!-- 错误信息显示 -->
-<div th:if="${error}" style="color: red;">
-    <p th:text="${error}"></p>
-</div>
-
-<!-- 提示信息 -->
-<div th:if="${warning}" style="color: orange;">
-    <p th:text="${warning}"></p>
 </div>
 
 <!-- 数据表格显示 -->
@@ -116,22 +116,12 @@
     </thead>
     <tbody>
     <tr th:each="row : ${data}">
-        <td th:each="entry : ${row.entrySet()}"
-            th:text="${entry.value}"
-            th:classappend="${entry.key == '序号' ? 'bold' : ''}"></td>
+        <td th:each="entry : ${row.entrySet()}" th:text="${entry.value}"></td>
     </tr>
     </tbody>
 </table>
 
-<!-- 分页导航 -->
-<div class="pagination" th:if="${totalPages > 1}">
-    <a th:each="i : ${#numbers.sequence(1, totalPages)}"
-       th:href="@{'/file?page=' + i}"
-       th:classappend="${i == currentPage ? 'active' : ''}"
-       th:text="'第 ' + i + ' 页'"></a>
-</div>
-
 <!-- 没有数据时显示 -->
-<p th:if="${#lists.isEmpty(data)}">暂无数据，请上传文件。</p>
+<p th:if="${#lists.isEmpty(data)}">暂无排序结果，请先上传文件并选择排序方式。</p>
 </body>
 </html>

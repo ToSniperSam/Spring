@@ -1,15 +1,12 @@
 package com.example.demo.util;
 
 import java.util.Arrays;
-import java.util.Random;
 
 public class CustomSorter {
 
-    // Generate subsets of the data for testing or sampling
-
     // Counting Sort Implementation
     public static class CountingSort {
-        public static void countingSort(int[] data) {
+        public static void countingSort(int[] data, boolean descending) {
             int max = Arrays.stream(data).max().orElse(0);
             int min = Arrays.stream(data).min().orElse(0);
             int range = max - min + 1;
@@ -28,25 +25,41 @@ public class CustomSorter {
                 count[data[i] - min]--;
             }
             System.arraycopy(output, 0, data, 0, data.length);
-        }
-    }
 
-    // Quick Sort Implementation
-// Quick Sort Implementation (Generic)
-    public static class QuickSort {
-        public static <T extends Comparable<T>> void quickSort(T[] arr, int low, int high) {
-            if (low < high) {
-                int pi = partition(arr, low, high);
-                quickSort(arr, low, pi - 1);
-                quickSort(arr, pi + 1, high);
+            // Reverse the array if descending order
+            if (descending) {
+                reverseArray(data);
             }
         }
 
-        private static <T extends Comparable<T>> int partition(T[] arr, int low, int high) {
+        private static void reverseArray(int[] array) {
+            int start = 0;
+            int end = array.length - 1;
+            while (start < end) {
+                int temp = array[start];
+                array[start] = array[end];
+                array[end] = temp;
+                start++;
+                end--;
+            }
+        }
+    }
+
+    // Quick Sort Implementation (Generic)
+    public static class QuickSort {
+        public static <T extends Comparable<T>> void quickSort(T[] arr, int low, int high, boolean descending) {
+            if (low < high) {
+                int pi = partition(arr, low, high, descending);
+                quickSort(arr, low, pi - 1, descending);
+                quickSort(arr, pi + 1, high, descending);
+            }
+        }
+
+        private static <T extends Comparable<T>> int partition(T[] arr, int low, int high, boolean descending) {
             T pivot = arr[high];
             int i = low - 1;
             for (int j = low; j < high; j++) {
-                if (arr[j].compareTo(pivot) <= 0) {
+                if (descending ? arr[j].compareTo(pivot) > 0 : arr[j].compareTo(pivot) <= 0) {
                     i++;
                     swap(arr, i, j);
                 }
@@ -62,20 +75,18 @@ public class CustomSorter {
         }
     }
 
-
-    // Merge Sort Implementation
-// Merge Sort Implementation (Generic)
+    // Merge Sort Implementation (Generic)
     public static class MergeSort {
-        public static <T extends Comparable<T>> void mergeSort(T[] arr, int left, int right) {
+        public static <T extends Comparable<T>> void mergeSort(T[] arr, int left, int right, boolean descending) {
             if (left < right) {
                 int mid = (left + right) / 2;
-                mergeSort(arr, left, mid);
-                mergeSort(arr, mid + 1, right);
-                merge(arr, left, mid, right);
+                mergeSort(arr, left, mid, descending);
+                mergeSort(arr, mid + 1, right, descending);
+                merge(arr, left, mid, right, descending);
             }
         }
 
-        private static <T extends Comparable<T>> void merge(T[] arr, int left, int mid, int right) {
+        private static <T extends Comparable<T>> void merge(T[] arr, int left, int mid, int right, boolean descending) {
             int n1 = mid - left + 1;
             int n2 = right - mid;
 
@@ -84,7 +95,7 @@ public class CustomSorter {
 
             int i = 0, j = 0, k = left;
             while (i < n1 && j < n2) {
-                if (L[i].compareTo(R[j]) <= 0) {
+                if (descending ? L[i].compareTo(R[j]) > 0 : L[i].compareTo(R[j]) <= 0) {
                     arr[k++] = L[i++];
                 } else {
                     arr[k++] = R[j++];
@@ -97,11 +108,11 @@ public class CustomSorter {
 
     // Insertion Sort Implementation
     public static class InsertionSort {
-        public static void insertionSort(int[] arr, int low, int high) {
+        public static void insertionSort(int[] arr, int low, int high, boolean descending) {
             for (int i = low + 1; i <= high; i++) {
                 int key = arr[i];
                 int j = i - 1;
-                while (j >= low && arr[j] > key) {
+                while (j >= low && (descending ? arr[j] < key : arr[j] > key)) {
                     arr[j + 1] = arr[j];
                     j--;
                 }
