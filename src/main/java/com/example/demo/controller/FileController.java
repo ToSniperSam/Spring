@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -10,11 +12,16 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
+import java.nio.charset.StandardCharsets;
 @Controller
 public class FileController {
 
-    private List<Map<String, String>> originalData = new ArrayList<>(); // 存储原始数据
+    private List<Map<String, String>> originalData = new ArrayList<>();
+    private List<Map<String, String>> sortedData = new ArrayList<>();
     private static final String[] VARIABLE_NAMES = {
             "VehicleType", "DirectionTime_O", "GantryID_O",
             "DirectionTime_D", "GantryID_D", "TripLength",
@@ -31,17 +38,22 @@ public class FileController {
         originalData.clear(); // 清空原数据
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-            List<String[]> rawData = reader.lines()
-                    .map(line -> line.split(","))
-                    .collect(Collectors.toList());
+            String line;
+            boolean isFirstLine = true;
 
-            // 处理每一行数据
-            for (int i = 0; i < rawData.size(); i++) {
-                String[] row = rawData.get(i);
+            while ((line = reader.readLine()) != null) {
+                if (isFirstLine) {
+                    // 去除 BOM
+                    line = line.replace("\uFEFF", ""); // 去除 UTF-8 BOM
+                    isFirstLine = false;
+                }
+
+                String[] row = line.split(",");
                 Map<String, String> rowData = new LinkedHashMap<>();
-                rowData.put("序号", String.valueOf(i + 1)); // 序号
+                rowData.put("Order", String.valueOf(originalData.size() + 1));
+
                 for (int j = 0; j < VARIABLE_NAMES.length; j++) {
-                    String value = (j < row.length) ? row[j] : ""; // 处理可能的缺失数据
+                    String value = (j < row.length) ? row[j] : ""; // 处理缺失数据
 
                     // 特别处理第 8 列 (TripInformation)
                     if (j == 7) {
@@ -138,8 +150,11 @@ public class FileController {
                     throw new IllegalArgumentException("不支持的列名: " + column);
             }
 
+            sortedData = new ArrayList<>(dataToSort);
+
             long endTime = System.currentTimeMillis(); // 结束计时
             model.addAttribute("sortTime", endTime - startTime); // 排序耗时
+            model.addAttribute("currentColumn", column); // 添加当前排序列的信息
 
             // 如果排序后的数据超过 100 条，只显示前 100 条
             if (dataToSort.size() > 100) {
@@ -185,5 +200,36 @@ public class FileController {
             return null;
         }
     }
+
+    @PostMapping("/export")
+    public ResponseEntity<?> exportData() {
+        if (sortedData == null || sortedData.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("当前没有排序后的数据，无法导出！");
+        }
+
+        try {
+            StringBuilder csvContent = new StringBuilder();
+            List<String> csvHeaders = new ArrayList<>(sortedData.get(0).keySet());
+            csvContent.append(String.join(",", csvHeaders)).append("\n");
+
+            for (Map<String, String> row : sortedData) {
+                List<String> rowData = csvHeaders.stream()
+                        .map(header -> row.getOrDefault(header, ""))
+                        .collect(Collectors.toList());
+                csvContent.append(String.join(",", rowData)).append("\n");
+            }
+
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.add("Content-Disposition", "attachment; filename=sorted_data.csv");
+            responseHeaders.add("Content-Type", "text/csv; charset=UTF-8");
+
+            return ResponseEntity.ok()
+                    .headers(responseHeaders)
+                    .body(csvContent.toString().getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("导出失败：" + e.getMessage());
+        }
+    }
+
 
 }

@@ -61,6 +61,44 @@
                 alert("请选择排序列！");
             }
         }
+
+        function exportData() {
+            fetch('/export', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(error => {
+                            throw new Error(error);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    // 创建一个 Blob 对象并触发下载
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'sorted_data.csv';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                })
+                .catch(error => {
+                    // 显示错误提示
+                    const errorDiv = document.getElementById('exportError');
+                    errorDiv.textContent = error.message;
+                    errorDiv.style.display = 'block';
+                    setTimeout(() => {
+                        errorDiv.style.display = 'none';
+                    }, 5000);
+                });
+        }
+
+
     </script>
 </head>
 <body>
@@ -104,8 +142,13 @@
 
 <!-- 显示排序时间 -->
 <div th:if="${sortTime}">
+    <p>当前排序列：<span th:text="${currentColumn}"></span></p>
     <p th:text="'排序耗时: ' + ${sortTime} + ' 毫秒'"></p>
 </div>
+
+<button id="exportButton" onclick="exportData()">导出排序结果</button>
+<div id="exportError" style="color: red; display: none;"></div>
+
 
 <!-- 数据表格显示 -->
 <table th:if="${data}" th:unless="${#lists.isEmpty(data)}">
