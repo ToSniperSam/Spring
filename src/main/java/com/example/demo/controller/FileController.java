@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.util.CustomSorter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +21,9 @@ public class FileController {
             "TripEnd", "TripInformation"
     };
 
-    @RequestMapping("/file")
+    @RequestMapping("/")
     public String index() {
-        return "upload"; // 返回 Thymeleaf 的 upload.html 页面
+        return "index"; // 返回 Thymeleaf 的 index.html 页面
     }
 
     @PostMapping("/upload")
@@ -68,7 +67,7 @@ public class FileController {
             model.addAttribute("error", "文件上传失败，请检查文件格式！");
         }
 
-        return "upload"; // 返回上传页面并显示数据
+        return "index"; // 返回上传页面并显示数据
     }
 
     @PostMapping("/sort")
@@ -154,7 +153,7 @@ public class FileController {
             model.addAttribute("error", "排序失败：" + e.getMessage());
         }
 
-        return "upload"; // 返回上传页面并展示排序后的数据
+        return "index"; // 返回上传页面并展示排序后的数据
     }
 
     // 辅助方法：将字符串解析为 Double
