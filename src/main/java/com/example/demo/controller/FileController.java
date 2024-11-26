@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.util.CustomSorter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -22,6 +23,8 @@ public class FileController {
 
     private List<Map<String, String>> originalData = new ArrayList<>();
     private List<Map<String, String>> sortedData = new ArrayList<>();
+
+    private List<Map<String, String>> searchResults;
     private static final String[] VARIABLE_NAMES = {
             "VehicleType", "DirectionTime_O", "GantryID_O",
             "DirectionTime_D", "GantryID_D", "TripLength",
@@ -92,7 +95,6 @@ public class FileController {
         try {
             long startTime = System.currentTimeMillis(); // 开始计时
 
-            // 根据排序列和排序顺序进行排序
             switch (column) {
                 case "VehicleType":
                 case "TripLength": {
@@ -150,11 +152,19 @@ public class FileController {
                     throw new IllegalArgumentException("不支持的列名: " + column);
             }
 
+
             sortedData = new ArrayList<>(dataToSort);
 
             long endTime = System.currentTimeMillis(); // 结束计时
             model.addAttribute("sortTime", endTime - startTime); // 排序耗时
             model.addAttribute("currentColumn", column); // 添加当前排序列的信息
+            if(descending){
+                model.addAttribute("descending","降序" );
+            }
+            else{
+                model.addAttribute("descending","正序" );
+            }
+
 
             // 如果排序后的数据超过 100 条，只显示前 100 条
             if (dataToSort.size() > 100) {
@@ -201,26 +211,90 @@ public class FileController {
         }
     }
 
+    @PostMapping("/search")
+    public String searchData(@RequestParam("column") String column,
+                             @RequestParam("keyword") String keyword,
+                             Model model) {
+        // 确保搜索的数据基于原始数据，而非已经排序或筛选过的数据
+        List<Map<String, String>> dataToSearch = new ArrayList<>(originalData); // originalData 为原始数据的全局变量
+        List<Map<String, String>> filteredData = new ArrayList<>();
+
+        try {
+            long startTime = System.currentTimeMillis(); // 开始计时
+
+            // 遍历数据，查找包含关键词的记录（忽略大小写）
+            for (Map<String, String> row : dataToSearch) {
+                String value = row.get(column);
+                if (value != null && value.toLowerCase().contains(keyword.toLowerCase())) {
+                    filteredData.add(row); // 匹配关键词的记录
+                }
+            }
+
+            // 搜索完成后的结果处理
+            if (filteredData.isEmpty()) {
+                model.addAttribute("info", "未找到匹配数据，显示上传的原始数据");
+                model.addAttribute("data", dataToSearch.subList(0, Math.min(dataToSearch.size(), 100))); // 显示原始数据的前 100 条
+            } else {
+                if (filteredData.size() > 100) {
+                    model.addAttribute("warning", "搜索结果超过 100 条，仅显示前 100 条");
+                    model.addAttribute("data", filteredData.subList(0, 100));
+                } else {
+                    model.addAttribute("data", filteredData);
+                }
+                model.addAttribute("searchResultsCount", filteredData.size()); // 搜索结果总数
+            }
+
+            // 将搜索结果存储到新的数据集合中，以便后续导出使用
+            searchResults = filteredData; // 这里将搜索结果保存到全局变量 searchResults 中
+
+            long endTime = System.currentTimeMillis(); // 结束计时
+            model.addAttribute("searchTime", endTime - startTime); // 搜索耗时
+            model.addAttribute("currentColumn", column); // 当前搜索列
+            model.addAttribute("searchKeyword", keyword); // 当前搜索关键词
+
+        } catch (Exception e) {
+            model.addAttribute("error", "搜索失败：" + e.getMessage());
+        }
+
+        return "index"; // 返回页面
+    }
+
+
+
     @PostMapping("/export")
-    public ResponseEntity<?> exportData() {
-        if (sortedData == null || sortedData.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("当前没有排序后的数据，无法导出！");
+    public ResponseEntity<?> exportData(@RequestParam(value = "type", required = false) String type) {
+        List<Map<String, String>> dataToExport;
+
+        // 根据 type 参数确定导出排序数据还是搜索数据
+        if ("search".equalsIgnoreCase(type)) {
+            dataToExport = searchResults; // searchResults 为全局变量，保存最新搜索结果
+            if (dataToExport == null || dataToExport.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("当前没有搜索结果，无法导出！");
+            }
+        } else {
+            dataToExport = sortedData; // sortedData 为全局变量，保存最新排序结果
+            if (dataToExport == null || dataToExport.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("当前没有排序后的数据，无法导出！");
+            }
         }
 
         try {
+            // 生成 CSV 内容
             StringBuilder csvContent = new StringBuilder();
-            List<String> csvHeaders = new ArrayList<>(sortedData.get(0).keySet());
+            List<String> csvHeaders = new ArrayList<>(dataToExport.get(0).keySet());
             csvContent.append(String.join(",", csvHeaders)).append("\n");
 
-            for (Map<String, String> row : sortedData) {
+            for (Map<String, String> row : dataToExport) {
                 List<String> rowData = csvHeaders.stream()
                         .map(header -> row.getOrDefault(header, ""))
                         .collect(Collectors.toList());
                 csvContent.append(String.join(",", rowData)).append("\n");
             }
 
+            // 设置响应头
             HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.add("Content-Disposition", "attachment; filename=sorted_data.csv");
+            String filename = "search".equalsIgnoreCase(type) ? "search_results.csv" : "sorted_data.csv";
+            responseHeaders.add("Content-Disposition", "attachment; filename=" + filename);
             responseHeaders.add("Content-Type", "text/csv; charset=UTF-8");
 
             return ResponseEntity.ok()
