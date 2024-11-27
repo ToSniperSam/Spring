@@ -3,65 +3,206 @@
 <head>
     <title>Transportation Demo</title>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid black;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .bold {
-            font-weight: bold;
-        }
-        .info {
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
-        }
-        .error {
-            color: red;
-        }
-        .warning {
-            color: orange;
+        /* 通用样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #E7E3E3;
         }
 
-        /* Custom file input styles */
-        .file-label {
-            display: inline-block;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 5px;
+        header {
+            text-align: center;
+            padding: 20px;
+            background-color: #DDD4D4;
+            color: black;
+            font-size: 2.5em;
+            font-weight: bold;
         }
-        .file-label:hover {
-            background-color: #45a049;
+
+
+        h1, h2 {
+            color: #333;
+            text-align: center;
         }
-        #fileInput {
-            display: none;  /* Hide the original file input */
+
+        /* 文件上传样式 */
+        form {
+            margin: 20px auto;  /* 上下 20px，左右居中 */
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center; /* 内容居中 */
+            max-width: 400px; /* 最大宽度为600px */
+            width: 90%; /* 宽度自适应，最多为最大宽度的90% */
         }
+
+
+        input[type="file"] {
+            display: none;
+        }
+
         .file-name {
             margin-left: 10px;
-            font-style: italic;
+            font-size: 14px;
         }
+
+        /* 自定义按钮样式 */
+        button, label.file-label {
+            color: #090909;
+            padding: 0.7em 1.7em;
+            font-size: 18px;
+            border-radius: 0.5em;
+            background: #e8e8e8;
+            cursor: pointer;
+            border: 1px solid #e8e8e8;
+            transition: all 0.3s;
+            box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+            display: inline-block; /* Buttons in a line */
+        }
+
+        button:active, label.file-label:active {
+            color: #666;
+            box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
+        }
+
+        /* 信息提示 */
+        .info, .error, .warning {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        /* 排序和搜索表单 */
+        #sortSection, #searchSection {
+            display: none;
+            margin: 20px auto;  /* 上下 20px，左右居中 */
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center; /* 内容居中 */
+            max-width: 400px; /* 最大宽度为600px */
+            width: 90%; /* 宽度自适应，最多为最大宽度的90% */
+
+        }
+
+        #sortSection select, #searchSection select, #searchSection input[type="text"] {
+            width: auto; /* Adjust width to content */
+            min-width: 200px; /* Minimum width */
+            max-width: 300px; /* Maximum width */
+            padding: 8px;
+            margin: 6px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            display: inline-block;
+            text-align: center;
+        }
+
+        /* 排序和搜索按钮 */
+        div > button {
+            margin: 0 10px;
+            padding: 0.7em 1.7em;
+            font-size: 18px;
+            border-radius: 0.5em;
+            background: #e8e8e8;
+            cursor: pointer;
+            border: 1px solid #e8e8e8;
+            transition: all 0.3s;
+            box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+            display: inline-block;
+        }
+
+        /* 选择功能按钮居中 */
+        div {
+            text-align: center;
+        }
+
+        /* 排序与搜索文字样式 */
+        .sort-search-text {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background-color: #f0f8ff;
+            border: 1px solid #b0c4de;
+            color: #333;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Export按钮居中 */
+        #exportButtonSort, #exportButtonSearch {
+            display: block;
+            margin: 20px auto;
+            padding: 0.7em 1.7em;
+            font-size: 18px;
+            border-radius: 0.5em;
+            background: #e8e8e8;
+            cursor: pointer;
+            border: 1px solid #e8e8e8;
+            transition: all 0.3s;
+            box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+        }
+
+        #exportButtonSort:active, #exportButtonSearch:active {
+            color: #666;
+            box-shadow: inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        p {
+            font-size: 16px;
+            text-align: center;
+        }
+
     </style>
     <script>
-        // Update file name display when a file is selected
+        // 更新文件名显示
         function updateFileName() {
             const fileInput = document.getElementById('fileInput');
             const fileName = document.getElementById('fileName');
             fileName.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : "No file chosen";
         }
 
-        // Sort data
+        // 排序数据
         function sortData() {
             const column = document.getElementById("sortColumn").value;
             const order = document.querySelector('input[name="order"]:checked').value;
@@ -90,7 +231,7 @@
             }
         }
 
-        // Search data
+        // 搜索数据
         function searchData() {
             const column = document.getElementById("searchColumn").value;
             const keyword = document.getElementById("searchKeyword").value;
@@ -119,7 +260,7 @@
             }
         }
 
-        // Export data
+        // 导出数据
         function exportData(type) {
             const url = `/export?type=${type}`;
 
@@ -152,37 +293,54 @@
                     alert("Error!：" + error.message);
                 });
         }
-
     </script>
 </head>
 <body>
-<h1>Upload and Functions</h1>
+
+<header>
+    Transportation System
+</header>
+
+<h2>Upload a file</h2>
 
 <form action="/upload" method="post" enctype="multipart/form-data">
-    <!-- Custom file input using a label -->
-    <label for="fileInput" class="file-label">Choose File</label>
-    <input type="file" id="fileInput" name="file" accept=".csv" required onchange="updateFileName()" />
-    <span id="fileName" class="file-name">No file chosen</span>
-    <button type="submit">Upload File</button>
+    <!-- 使用自定义样式的文件选择按钮 -->
+
+    <p>
+        <label for="fileInput" class="file-label">Choose File</label>
+        <input type="file" id="fileInput" name="file" accept=".csv" required onchange="updateFileName()"/>
+    </p>
+
+    <p class="FileName">
+        <span id="fileName" class="file-name">No file chosen</span>
+    </p>
+
+    <p>
+        <button type="submit">Upload File</button>
+    </p>
 </form>
 
-<!-- Display warning, error, and info -->
+<!-- 显示警告、错误和信息 -->
 <div class="info" th:if="${message}" th:text="${message}"></div>
 <div class="error" th:if="${error}" th:text="${error}"></div>
 <div class="warning" th:if="${warning}" th:text="${warning}"></div>
 
 <hr/>
 
-<!-- Function selection -->
-<h2>Choose a Function</h2>
+<!-- 功能选择 -->
+<h2>Choose a function</h2>
 <div>
-    <button onclick="document.getElementById('sortSection').style.display = 'block'; document.getElementById('searchSection').style.display = 'none';">Sort</button>
-    <button onclick="document.getElementById('sortSection').style.display = 'none'; document.getElementById('searchSection').style.display = 'block';">Search</button>
+    <button onclick="document.getElementById('sortSection').style.display = 'block'; document.getElementById('searchSection').style.display = 'none';">
+        Sort
+    </button>
+    <button onclick="document.getElementById('sortSection').style.display = 'none'; document.getElementById('searchSection').style.display = 'block';">
+        Search
+    </button>
 </div>
 
 <hr/>
 
-<!-- Sorting form -->
+<!-- 排序表单 -->
 <div id="sortSection" style="display:none;">
     <h2>Sort Configuration</h2>
     <form method="post" onsubmit="sortData(); return false;">
@@ -194,18 +352,24 @@
             <option value="TripLength">Trip Length</option>
         </select>
 
-        <label>
-            <input type="radio" name="order" value="asc" checked /> ASC
-        </label>
-        <label>
-            <input type="radio" name="order" value="desc" /> DESC
-        </label>
+        <p>
+            <label>
+                <input type="radio" name="order" value="asc" checked/> ASC
+            </label>
+            <label>
+                <input type="radio" name="order" value="desc"/> DESC
+            </label>
+        </p>
 
-        <button type="submit">Sort!</button>
+
+        <p>
+            <button type="submit">Sort!</button>
+        </p>
+
     </form>
 </div>
 
-<!-- Search form -->
+<!-- 搜索表单 -->
 <div id="searchSection" style="display:none;">
     <h2>Search Configuration</h2>
     <form method="post" onsubmit="searchData(); return false;">
@@ -217,16 +381,23 @@
             <option value="TripLength">Trip Length</option>
         </select>
 
-        <label for="searchKeyword">Keyword:</label>
-        <input type="text" id="searchKeyword" name="keyword" required />
 
-        <button type="submit">Search!</button>
+        <p>
+            <label for="searchKeyword">Keyword:</label>
+            <input type="text" id="searchKeyword" name="keyword" required/>
+        </p>
+
+
+        <p>
+            <button type="submit">Search!</button>
+        </p>
+
     </form>
 </div>
 
 <hr/>
 
-<!-- Display sort time -->
+<!-- 显示排序时间 -->
 <div th:if="${sortTime}">
     <p>Column: <span th:text="${currentColumn}"></span></p>
     <p th:text="'Sort Timing: ' + ${sortTime} + ' ms'"></p>
@@ -235,7 +406,7 @@
     <div id="exportError" style="color: red; display: none;"></div>
 </div>
 
-<!-- Display search time and result count -->
+<!-- 显示搜索时间和结果数量 -->
 <div th:if="${searchTime}">
     <p>Keyword: <span th:text="${searchKeyword}"></span></p>
     <p th:text="'Search Timing: ' + ${searchTime} + ' ms'"></p>
@@ -245,7 +416,7 @@
 
 <hr/>
 
-<!-- Data table display -->
+<!-- 数据表格显示 -->
 <table th:if="${data}" th:unless="${#lists.isEmpty(data)}">
     <thead>
     <tr>
@@ -259,7 +430,7 @@
     </tbody>
 </table>
 
-<!-- No data message -->
+<!-- 无数据提示 -->
 <p th:if="${#lists.isEmpty(data)}">No data, Please upload your file.</p>
 
 </body>

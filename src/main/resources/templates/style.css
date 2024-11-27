@@ -1,0 +1,188 @@
+/* General Button Styles (including file-label) */
+button, .file-label {
+    background-color: #4CAF50;
+    border-radius: 50px;
+    box-shadow: inset 4px 4px 10px #bcbcbc, inset -4px -4px 10px #ffffff;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 15px 40px;
+    transition: all 0.2s ease-in-out;
+    border: 2px solid rgb(206, 206, 206);
+    display: inline-block;
+    text-align: center;
+    width: auto; /* Allow button and file input label to have natural width */
+    margin-top: 10px;
+}
+
+button:hover, .file-label:hover {
+    background-color: #45a049;
+    box-shadow: inset 2px 2px 5px #bcbcbc, inset -2px -2px 5px #ffffff, 2px 2px 5px #bcbcbc, -2px -2px 5px #ffffff;
+}
+
+button:focus, .file-label:focus {
+    outline: none;
+    box-shadow: inset 2px 2px 5px #bcbcbc, inset -2px -2px 5px #ffffff, 2px 2px 5px #bcbcbc, -2px -2px 5px #ffffff;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 12px 20px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Message Styles */
+.info, .error, .warning {
+    margin: 10px 0;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.info {
+    background-color: #e7f7e7;
+    color: #4caf50;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* Custom File Input Styles */
+.file-label {
+    background-color: #4CAF50;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.file-label:hover {
+    background-color: #45a049;
+}
+
+#fileInput {
+    display: none;
+}
+
+.file-name {
+    margin-left: 10px;
+    font-style: italic;
+    color: #555;
+}
+
+/* Form and Section Visibility */
+form {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+label {
+    font-size: 16px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+input[type="text"], select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+input[type="text"]:focus, select:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+/* Section Header and Layout */
+#sortSection, #searchSection {
+    margin-top: 20px;
+}
+
+#sortSection, #searchSection {
+    display: none;
+}
+
+hr {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+/* Export Button Style */
+#exportButtonSort, #exportButtonSearch {
+    padding: 12px 25px;
+    font-size: 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    margin-top: 20px;
+    display: inline-block;
+    border-radius: 8px;
+}
+
+#exportButtonSort:hover, #exportButtonSearch:hover {
+    background-color: #0056b3;
+}
+
+/* Layout for buttons */
+div > button {
+    margin-right: 10px;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+    form {
+        padding: 15px;
+    }
+
+    button, .file-label {
+        width: 100%;
+        padding: 12px;
+    }
+
+    #fileInput {
+        width: 100%;
+    }
+
+    table {
+        font-size: 14px;
+    }
+}
