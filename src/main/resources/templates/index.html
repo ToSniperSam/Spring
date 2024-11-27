@@ -193,6 +193,23 @@
             text-align: center;
         }
 
+        #mergeSection {
+            display: none;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        #mergeResult {
+            display: none;
+            text-align: center;
+        }
+
     </style>
     <script>
         // 更新文件名显示
@@ -293,6 +310,59 @@
                     alert("Error!：" + error.message);
                 });
         }
+
+
+        function updateFileName(inputId, spanId) {
+            const fileInput = document.getElementById(inputId);
+            const fileName = document.getElementById(spanId);
+            fileName.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : "No file chosen";
+        }
+
+        // 合并文件操作
+        function mergeFiles() {
+            const form = document.getElementById('mergeForm');
+            const formData = new FormData(form);
+
+            fetch('/file/merge', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('mergeResult').style.display = 'block';
+                    document.getElementById('mergeMessage').textContent = 'Files have been merged successfully!';
+                    document.getElementById('downloadMergedFile').style.display = 'inline-block';
+                })
+                .catch(error => {
+                    alert("Error!：" + error.message);
+                });
+        }
+
+        // 下载合并后的文件
+        function downloadMergedFile() {
+            const formData = new FormData();
+            formData.append('file1', document.getElementById('fileInput1').files[0]);
+            formData.append('file2', document.getElementById('fileInput2').files[0]);
+
+            fetch('/file/merge', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'merged_data.csv';
+                    link.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error("Error downloading merged file:", error);
+                });
+        }
+
+
     </script>
 </head>
 <body>
@@ -327,14 +397,18 @@
 
 <hr/>
 
+
 <!-- 功能选择 -->
 <h2>Choose a function</h2>
 <div>
-    <button onclick="document.getElementById('sortSection').style.display = 'block'; document.getElementById('searchSection').style.display = 'none';">
+    <button onclick="document.getElementById('sortSection').style.display = 'block'; document.getElementById('searchSection').style.display = 'none'; document.getElementById('mergeSection').style.display = 'none';">
         Sort
     </button>
-    <button onclick="document.getElementById('sortSection').style.display = 'none'; document.getElementById('searchSection').style.display = 'block';">
+    <button onclick="document.getElementById('sortSection').style.display = 'none'; document.getElementById('searchSection').style.display = 'block'; document.getElementById('mergeSection').style.display = 'none';">
         Search
+    </button>
+    <button onclick="document.getElementById('sortSection').style.display = 'none'; document.getElementById('searchSection').style.display = 'none'; document.getElementById('mergeSection').style.display = 'block';">
+        Merge Files
     </button>
 </div>
 
@@ -394,6 +468,32 @@
 
     </form>
 </div>
+
+<div id="mergeSection">
+    <h2>Merge Two CSV Files</h2>
+    <form id="mergeForm" method="post" onsubmit="mergeFiles(); return false;">
+        <p>
+            <label for="fileInput1" class="file-label">Choose File 1</label>
+            <input type="file" id="fileInput1" name="file1" accept=".csv" required onchange="updateFileName('fileInput1', 'fileName1')"/>
+            <span id="fileName1" class="file-name">No file chosen</span>
+        </p>
+        <p>
+            <label for="fileInput2" class="file-label">Choose File 2</label>
+            <input type="file" id="fileInput2" name="file2" accept=".csv" required onchange="updateFileName('fileInput2', 'fileName2')"/>
+            <span id="fileName2" class="file-name">No file chosen</span>
+        </p>
+        <p>
+            <button type="submit">Merge Files</button>
+        </p>
+    </form>
+
+    <!-- 合并结果和下载按钮 -->
+    <div id="mergeResult">
+        <p id="mergeMessage" class="info">Files have been merged successfully!</p>
+        <button id="downloadMergedFile" style="display:none;" onclick="downloadMergedFile()">Download Merged File</button>
+    </div>
+</div>
+
 
 <hr/>
 
