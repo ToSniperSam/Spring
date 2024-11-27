@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>CSV 文件上传与排序</title>
+    <title>Transportation Demo</title>
     <style>
         table {
             width: 100%;
@@ -32,9 +32,36 @@
         .warning {
             color: orange;
         }
+
+        /* Custom file input styles */
+        .file-label {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .file-label:hover {
+            background-color: #45a049;
+        }
+        #fileInput {
+            display: none;  /* Hide the original file input */
+        }
+        .file-name {
+            margin-left: 10px;
+            font-style: italic;
+        }
     </style>
     <script>
-        // 排序数据
+        // Update file name display when a file is selected
+        function updateFileName() {
+            const fileInput = document.getElementById('fileInput');
+            const fileName = document.getElementById('fileName');
+            fileName.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : "No file chosen";
+        }
+
+        // Sort data
         function sortData() {
             const column = document.getElementById("sortColumn").value;
             const order = document.querySelector('input[name="order"]:checked').value;
@@ -59,11 +86,11 @@
                 document.body.appendChild(form);
                 form.submit();
             } else {
-                alert("请选择排序列！");
+                alert("Please choose the column!");
             }
         }
 
-        // 搜索数据
+        // Search data
         function searchData() {
             const column = document.getElementById("searchColumn").value;
             const keyword = document.getElementById("searchKeyword").value;
@@ -88,13 +115,12 @@
                 document.body.appendChild(form);
                 form.submit();
             } else {
-                alert("请选择搜索列和输入关键词！");
+                alert("Please choose the column and keyword!");
             }
         }
 
-        // 导出数据
+        // Export data
         function exportData(type) {
-            // 根据类型设置请求的 URL，'search' 或 'sort'
             const url = `/export?type=${type}`;
 
             fetch(url, {
@@ -109,119 +135,117 @@
                             throw new Error(error);
                         });
                     }
-                    return response.blob();  // 获取返回的 CSV 文件
+                    return response.blob();
                 })
                 .then(blob => {
                     const downloadFileName = type === 'search' ? 'search_results.csv' : 'sorted_data.csv';
 
-                    // 创建下载链接并触发下载
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = downloadFileName;  // 根据导出类型选择文件名
+                    link.download = downloadFileName;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                 })
                 .catch(error => {
-                    alert("导出失败：" + error.message);  // 错误提示
+                    alert("Error!：" + error.message);
                 });
         }
 
     </script>
 </head>
 <body>
-<h1>CSV 文件上传与操作</h1>
+<h1>Upload and Functions</h1>
 
-<!-- 文件上传表单 -->
 <form action="/upload" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" accept=".csv" required />
-    <button type="submit">上传文件</button>
+    <!-- Custom file input using a label -->
+    <label for="fileInput" class="file-label">Choose File</label>
+    <input type="file" id="fileInput" name="file" accept=".csv" required onchange="updateFileName()" />
+    <span id="fileName" class="file-name">No file chosen</span>
+    <button type="submit">Upload File</button>
 </form>
 
-<!-- 显示警告、错误、信息 -->
+<!-- Display warning, error, and info -->
 <div class="info" th:if="${message}" th:text="${message}"></div>
 <div class="error" th:if="${error}" th:text="${error}"></div>
 <div class="warning" th:if="${warning}" th:text="${warning}"></div>
 
 <hr/>
 
-<!-- 功能选择 -->
-<h2>选择功能</h2>
+<!-- Function selection -->
+<h2>Choose a Function</h2>
 <div>
-    <button onclick="document.getElementById('sortSection').style.display = 'block'; document.getElementById('searchSection').style.display = 'none';">排序</button>
-    <button onclick="document.getElementById('sortSection').style.display = 'none'; document.getElementById('searchSection').style.display = 'block';">搜索</button>
+    <button onclick="document.getElementById('sortSection').style.display = 'block'; document.getElementById('searchSection').style.display = 'none';">Sort</button>
+    <button onclick="document.getElementById('sortSection').style.display = 'none'; document.getElementById('searchSection').style.display = 'block';">Search</button>
 </div>
 
 <hr/>
 
-<!-- 排序表单 -->
+<!-- Sorting form -->
 <div id="sortSection" style="display:none;">
-    <h2>排序设置</h2>
+    <h2>Sort Configuration</h2>
     <form method="post" onsubmit="sortData(); return false;">
-        <label for="sortColumn">选择排序列:</label>
+        <label for="sortColumn">Choose Sorting Column:</label>
         <select id="sortColumn" name="column">
-            <option value="VehicleType">VehicleType</option>
-            <option value="DirectionTime_O">DirectionTime_O</option>
-            <option value="GantryID_O">GantryID_O</option>
-            <option value="TripLength">TripLength</option>
+            <option value="VehicleType">Vehicle Type</option>
+            <option value="DirectionTime_O">Direction Time (Out)</option>
+            <option value="GantryID_O">Gantry ID (Out)</option>
+            <option value="TripLength">Trip Length</option>
         </select>
 
         <label>
-            <input type="radio" name="order" value="asc" checked /> 升序
+            <input type="radio" name="order" value="asc" checked /> ASC
         </label>
         <label>
-            <input type="radio" name="order" value="desc" /> 降序
+            <input type="radio" name="order" value="desc" /> DESC
         </label>
 
-        <button type="submit">排序</button>
+        <button type="submit">Sort!</button>
     </form>
 </div>
 
-<!-- 搜索表单 -->
+<!-- Search form -->
 <div id="searchSection" style="display:none;">
-    <h2>搜索设置</h2>
+    <h2>Search Configuration</h2>
     <form method="post" onsubmit="searchData(); return false;">
-        <label for="searchColumn">选择搜索列:</label>
+        <label for="searchColumn">Choose Search Column:</label>
         <select id="searchColumn" name="column">
-            <option value="VehicleType">VehicleType</option>
-            <option value="DirectionTime_O">DirectionTime_O</option>
-            <option value="GantryID_O">GantryID_O</option>
-            <option value="TripLength">TripLength</option>
+            <option value="VehicleType">Vehicle Type</option>
+            <option value="DirectionTime_O">Direction Time (Out)</option>
+            <option value="GantryID_O">Gantry ID (Out)</option>
+            <option value="TripLength">Trip Length</option>
         </select>
 
-        <label for="searchKeyword">关键词:</label>
+        <label for="searchKeyword">Keyword:</label>
         <input type="text" id="searchKeyword" name="keyword" required />
 
-        <button type="submit">搜索</button>
+        <button type="submit">Search!</button>
     </form>
 </div>
 
 <hr/>
 
-<!-- 显示排序时间 -->
+<!-- Display sort time -->
 <div th:if="${sortTime}">
-    <p>当前排序列：<span th:text="${currentColumn}"></span></p>
-
-    <p th:text="'排序耗时: ' + ${sortTime} + ' 毫秒'"></p>
-    <p th:text="'排序方式: ' + ${descending} "></p>
-    <button id="exportButtonSort" onclick="exportData()">导出排序结果</button>
+    <p>Column: <span th:text="${currentColumn}"></span></p>
+    <p th:text="'Sort Timing: ' + ${sortTime} + ' ms'"></p>
+    <p th:text="'Order: ' + ${descending} "></p>
+    <button id="exportButtonSort" onclick="exportData()">Export Sorting Results</button>
     <div id="exportError" style="color: red; display: none;"></div>
 </div>
 
-<!-- 显示搜索时间与结果条数 -->
+<!-- Display search time and result count -->
 <div th:if="${searchTime}">
-    <p>关键词：<span th:text="${searchKeyword}"></span></p>
-    <p th:text="'搜索耗时: ' + ${searchTime} + ' 毫秒'"></p>
-    <p th:text="'共找到 ' + ${searchResultsCount} + ' 条相关数据'"></p>
-    <button id="exportButtonSearch" onclick="exportData('search')">导出搜索结果</button>
-
-
+    <p>Keyword: <span th:text="${searchKeyword}"></span></p>
+    <p th:text="'Search Timing: ' + ${searchTime} + ' ms'"></p>
+    <p th:text="'Total ' + ${searchResultsCount} + ' results'"></p>
+    <button id="exportButtonSearch" onclick="exportData('search')">Export Search Results</button>
 </div>
 
+<hr/>
 
-
-<!-- 数据表格显示 -->
+<!-- Data table display -->
 <table th:if="${data}" th:unless="${#lists.isEmpty(data)}">
     <thead>
     <tr>
@@ -235,8 +259,8 @@
     </tbody>
 </table>
 
-<!-- 没有数据时显示 -->
-<p th:if="${#lists.isEmpty(data)}">暂无排序结果，请先上传文件并选择操作。</p>
+<!-- No data message -->
+<p th:if="${#lists.isEmpty(data)}">No data, Please upload your file.</p>
 
 </body>
 </html>
