@@ -73,8 +73,6 @@ public class FileController {
                 model.addAttribute("data", originalData);
             }
 
-            model.addAttribute("totalPages", 1); // Display only 1 page of data by default
-            model.addAttribute("currentPage", 1); // Current page number
         } catch (Exception e) {
             model.addAttribute("error", "Failed to upload the file. Please check if it is in CSV format");
         }
