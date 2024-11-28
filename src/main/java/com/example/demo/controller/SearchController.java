@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class ResearchController {
+public class SearchController {
 
     private final FileData fileData;
 
-    public ResearchController(FileData fileData) {
+    public SearchController(FileData fileData) {
         this.fileData = fileData;
     }
 
