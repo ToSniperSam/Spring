@@ -312,7 +312,7 @@
         }
 
 
-        function updateFileName(inputId, spanId) {
+        function FileName(inputId, spanId) {
             const fileInput = document.getElementById(inputId);
             const fileName = document.getElementById(spanId);
             fileName.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : "No file chosen";
@@ -474,12 +474,12 @@
     <form id="mergeForm" method="post" onsubmit="mergeFiles(); return false;">
         <p>
             <label for="fileInput1" class="file-label">Choose File 1</label>
-            <input type="file" id="fileInput1" name="file1" accept=".csv" required onchange="updateFileName('fileInput1', 'fileName1')"/>
+            <input type="file" id="fileInput1" name="file1" accept=".csv" required onchange="FileName('fileInput1', 'fileName1')"/>
             <span id="fileName1" class="file-name">No file chosen</span>
         </p>
         <p>
             <label for="fileInput2" class="file-label">Choose File 2</label>
-            <input type="file" id="fileInput2" name="file2" accept=".csv" required onchange="updateFileName('fileInput2', 'fileName2')"/>
+            <input type="file" id="fileInput2" name="file2" accept=".csv" required onchange="FileName('fileInput2', 'fileName2')"/>
             <span id="fileName2" class="file-name">No file chosen</span>
         </p>
         <p>
