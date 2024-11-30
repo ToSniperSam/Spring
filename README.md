@@ -68,6 +68,7 @@ src/
  │   │           │   ├── SortController.java           # Sorting logic
  │   │           │   ├── SearchController.java         # Search logic
  │   │           │   ├── ExportController.java         # Export logic
+ │   │           │   ├── MergeController.java          # Merge data logic
  │   │           ├── model/
  │   │           │   └── FileData.java                 # Model class to store file data
  │   │           └── TransportationApplication.java    # Spring Boot Application class
@@ -79,6 +80,7 @@ src/
  │   ├── transportation-system.jar                     # JAR file
  │   └── transportation-system.exe                     # EXE file
 ```
+
 
 
 
